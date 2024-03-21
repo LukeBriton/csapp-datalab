@@ -281,7 +281,39 @@ int fitsBits(int x, int n) {
  *   Rating: 2
  */
 int dividePower2(int x, int n) {
-    return 2;
+  int sgn = (x >> 31) & 1;
+  //int nsgn = !sgn;
+  int direct = (x >> n);
+  // Old Code 3
+  //int nneg = ((~nsgn) + 1) & direct;
+  //int neg = ((~sgn) + 1) & (direct + odd);
+  // Old Code 4
+  //int mux = ((~sgn) + 1); // 这里可以砍，可见前几个代码处也可以删
+  //int neg =  mux & (direct + odd);
+  //int nneg = ~mux & direct;
+  int mask = ~((~0) << n);
+  int odd = (!(!(mask & x)));
+  int y = direct + (odd & sgn);
+  // Old Code 1
+  //int leftmost = sgn << 31;
+  //int comple = (~x)+1;
+  //int neg = ((~sgn) + 1) & (((~(comple >> n))+1)|leftmost);
+  // Old Code 2
+  //int odd = x & 1;
+  //int neg = ((~sgn) + 1) & ((x >> n) + (!(!n) & odd));
+  // 猜想：末 n 位里如果有 1（也就意味着算数的中间过程中会出现奇数）
+  // 奇数又会被强行向下取整，但是只需要加一回 1 就可以了。
+  // 如何得到末 n 位里 1 的情况（这里只考虑负数）
+  // (-2147483647[0x80000001] 假如直接 x 右移...
+  // Gives -1073741824[0xc0000000]. Should be -1073741823[0xc0000001]
+  // 右移对于正数是向下取整，对于负数也是向下取整取整。
+  // 所以问题：30 >> 1 = 15;
+  // -30 >> 1 = -15，但是-15 >> 1 = -8。
+  // 一开始老是想要先换成正数再右移
+  // -2147483648[0x80000000]
+  // 不能表示成正数，会超限制。
+  // 取补后仍为它本身。
+  return y;
 }
 /* 
  * negate - return -x 
@@ -355,6 +387,7 @@ unsigned floatAbsVal(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatScale1d2(unsigned uf) {
+  unsigned a = 100l;
   return 2;
 }
 /* 
