@@ -235,7 +235,11 @@ int bitCount(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  // 非 0 的全都是 true！！！ 
+  int mux = ((~(!x)) + 1);
+  int zero =  mux & z;
+  int nzero = ~mux & y;
+  return zero + nzero;
 }
 //two's complement
 /* 
@@ -387,7 +391,6 @@ unsigned floatAbsVal(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatScale1d2(unsigned uf) {
-  unsigned a = 100l;
   return 2;
 }
 /* 
