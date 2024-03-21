@@ -206,7 +206,16 @@ int getByte(int x, int n) {
  *   Rating: 3 
  */
 int logicalShift(int x, int n) {
-  return 2;
+  // 右移默认会填充符号位。
+  // 尝试直接得到符号位，1为负，0为正。
+  // 必须&1，否则负数的话会得到-1。
+  int sgn = (x >> 31) & 1;
+  int nsgn = !sgn;
+  int y = ((1 << 31) >> n) << 1;// 原来，这不叫integer constant
+  //int sgn = (((x >> 31) << 30) >> n) << 1;
+  int nneg = ((~nsgn) + 1) & (x >> n);
+  int neg = ((~sgn) + 1) & ((~y) & (x>>n));
+  return nneg+neg;
 }
 /*
  * bitCount - returns count of number of 1's in word
