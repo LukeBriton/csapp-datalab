@@ -245,7 +245,7 @@ int conditional(int x, int y, int z) {
  *   Rating: 1
  */
 int tmin(void) {
-  return 2;
+  return (1<<31);
 }
 /* 
  * fitsBits - return 1 if x can be represented as an 
