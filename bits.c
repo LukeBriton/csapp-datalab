@@ -193,7 +193,9 @@ int bitXor(int x, int y) {
  *   Rating: 2
  */
 int getByte(int x, int n) {
-  return 2;
+  int tmp = n + n + n + n;
+  int y = (((x >> tmp) >> tmp) & 0xff);
+  return y;
 }
 /* 
  * logicalShift - shift x to the right by n, using a logical shift
