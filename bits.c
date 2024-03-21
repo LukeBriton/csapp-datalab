@@ -291,7 +291,7 @@ int dividePower2(int x, int n) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return (~x)+1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
