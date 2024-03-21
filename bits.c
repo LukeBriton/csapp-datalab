@@ -257,7 +257,20 @@ int tmin(void) {
  *   Rating: 2
  */
 int fitsBits(int x, int n) {
-  return 2;
+  int sgn = (x >> 31) & 1;
+  int nsgn = !sgn;
+  // 原来负号不算op，但是，怪，为什么没有判-1非法。原来是没跑dlc
+  // dlc蠢得很
+  // 假如先左移再右移的话，正数可能变号。
+  //int nneg = nsgn & !((x >> nsub1));
+  //int neg = sgn & (!(((~(x>>n)))));
+  int neg1 = ~0;//((~1)+1);
+  int mask = neg1 << (n + neg1); // 老是忘记要减1的操作。
+  int nneg = nsgn & !(x & mask);
+  int neg = sgn & !(~(x | (~mask)));
+  // -2147483648[0x80000000]
+  // 取补后仍为它本身。
+  return nneg + neg;
 }
 /* 
  * dividePower2 - Compute x/(2^n), for 0 <= n <= 30
