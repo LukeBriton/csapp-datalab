@@ -440,7 +440,52 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4
  */
 int intLog2(int x) {
-  return 2;
+  // http://graphics.stanford.edu/~seander/bithacks.html#IntegerLogObvious
+  int b0 = 0x2;
+  int b1 = 0xC;
+  int b2 = 0xF0;
+  int b3 = 0xFF << 8; // 0xFF00;
+  int b4 = (b3 | 0xFF) << 16; // 0xFFFF0000;
+  int S0 = 1;
+  int S1 = 2;
+  int S2 = 4;
+  int S3 = 8;
+  int S4 = 16;
+
+  int r = 0; // result of log2(v) will go here
+  int mask;
+  int shift;
+  
+  // 以下形式上采取与 howManyBits 略有不同但实际一样的操作。
+  // 32位整数，检查高16位
+  mask = !!(b4 & x);
+  shift = mask << 4;
+  x = x >> shift;
+  r = r | shift;
+
+  // 接下来检查高8位
+  mask = !!(b3 & x);
+  shift = mask << 3;
+  x = x >> shift;
+  r = r | shift;
+
+  // 接下来检查高4位
+  mask = !!(b2 & x);
+  shift = mask << 2;
+  x = x >> shift;
+  r = r | shift;
+
+  // 检查高2位
+  mask = !!(b1 & x);
+  shift = mask << 1;
+  x = x >> shift;
+  r = r | shift;
+
+  // 最后检查最高位
+  mask = !!(b0 & x);
+  r = r | mask;
+
+  return r;
 }
 //float
 /* 
