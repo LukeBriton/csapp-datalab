@@ -393,21 +393,22 @@ int howManyBits(int x) {
   // 负数右移 n 次后变为 -1，最少也得有一位。
 
   // Claude 3 Sonnet 给的几乎是对的。
+  int b16, b8, b4, b2, b1, b0;
   int sgn = x >> 31;
   x = (sgn & ~x) | (~sgn & x); // x = abs(x), except when x == 0x80000000
 
   // Binary Search
-  int b16 = !!(x >> 16) << 4;
+  b16 = !!(x >> 16) << 4;
   x = x >> b16;
-  int b8 = !!(x >> 8) << 3;
+  b8 = !!(x >> 8) << 3;
   x = x >> b8;
-  int b4 = !!(x >> 4) << 2;
+  b4 = !!(x >> 4) << 2;
   x = x >> b4;
-  int b2 = !!(x >> 2) << 1;
+  b2 = !!(x >> 2) << 1;
   x = x >> b2;
-  int b1 = !!(x >> 1);
+  b1 = !!(x >> 1);
   x = x >> b1;
-  int b0 = x;
+  b0 = x;
 
   return b16 + b8 + b4 + b2 + b1 + b0 + 1;
 }
@@ -446,11 +447,6 @@ int intLog2(int x) {
   int b2 = 0xF0;
   int b3 = 0xFF << 8; // 0xFF00;
   int b4 = (b3 | 0xFF) << 16; // 0xFFFF0000;
-  int S0 = 1;
-  int S1 = 2;
-  int S2 = 4;
-  int S3 = 8;
-  int S4 = 16;
 
   int r = 0; // result of log2(v) will go here
   int mask;
