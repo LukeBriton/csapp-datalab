@@ -225,7 +225,50 @@ int logicalShift(int x, int n) {
  *   Rating: 4
  */
 int bitCount(int x) {
-  return 2;
+  // Reference 1:
+  // Brian Kernighan
+  // x & (x - 1) 会将最右的零消除掉。
+  // 统计这样操作的次数。
+  // 但是吧，这样也还会爆 Op 的啊。。。
+  
+  // Reference 2:
+  // Hamming Weight
+  // 我何德何能想得出来。。。
+  int mask1, mask2, mask3, mask4, mask5;
+  int sum;
+
+  // 也考虑过 (x >> 1) & 1，但肯定爆炸。
+  // 之前也一直考虑分治和掩码，但操作类似于
+  // 0101 & 1110 != 0
+  // 0101 & 1100 != 0
+  // 0101 & 1000 == 0
+  // 结果这样只能得到howManyBits，而且还爆 Ops。
+  // 想到的分治，也无非是类似打表，分成类似 4 个 Byte。
+  // 每段与上掩码，一方面没有想好，另一方面求和也是老大难。
+  
+  // 预定义掩码
+  // 俺何德何能
+  mask1 = 0x55 | (0x55 << 8);
+  mask1 = mask1 | (mask1 << 16); // 0x55555555
+
+  mask2 = 0x33 | (0x33 << 8);
+  mask2 = mask2 | (mask2 << 16); // 0x33333333
+
+  mask3 = 0x0F | (0x0F << 8);
+  mask3 = mask3 | (mask3 << 16); // 0x0F0F0F0F
+
+  mask4 = 0xFF | (0xFF << 16); // 0x00FF00FF
+
+  mask5 = 0xFF | (0xFF << 8); // 0x0000FFFF
+
+  // 分阶段累加
+  sum = (x & mask1) + ((x >> 1) & mask1);
+  sum = (sum & mask2) + ((sum >> 2) & mask2);
+  sum = (sum & mask3) + ((sum >> 4) & mask3);
+  sum = (sum & mask4) + ((sum >> 8) & mask4);
+  sum = (sum & mask5) + ((sum >> 16) & mask5);
+
+  return sum;
 }
 /* 
  * conditional - same as x ? y : z 
