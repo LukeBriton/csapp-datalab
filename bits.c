@@ -385,8 +385,33 @@ int negate(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetNaive
+  // 不对，以上链接给的是 bitCount
+  // ~评价为做不出来 bitCount 就别想做对。~
+  // 想错了，不是简单的 #0 + #1 就能做对
+  // 正数右移 n 次后为 0，再 + 1。（以表示符号位）
+  // 负数右移 n 次后变为 -1，最少也得有一位。
+
+  // Claude 3 Sonnet 给的几乎是对的。
+  int sgn = x >> 31;
+  x = (sgn & ~x) | (~sgn & x); // x = abs(x), except when x == 0x80000000
+
+  // Binary Search
+  int b16 = !!(x >> 16) << 4;
+  x = x >> b16;
+  int b8 = !!(x >> 8) << 3;
+  x = x >> b8;
+  int b4 = !!(x >> 4) << 2;
+  x = x >> b4;
+  int b2 = !!(x >> 2) << 1;
+  x = x >> b2;
+  int b1 = !!(x >> 1);
+  x = x >> b1;
+  int b0 = x;
+
+  return b16 + b8 + b4 + b2 + b1 + b0 + 1;
 }
+
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
  *   Example: isLessOrEqual(4,5) = 1.
