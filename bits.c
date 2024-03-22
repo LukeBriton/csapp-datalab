@@ -352,7 +352,17 @@ int howManyBits(int x) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  // -2147483648[0x80000000]
+  // 不能表示成正数，会超限制。
+  // 还要考虑溢出。
+  int sgnx = (x >> 31) & 1;
+  int sgny = (y >> 31) & 1;
+  int sum = x + ((~y)+1); // x - y
+  int sgn = (sum >> 31) & 1;
+  // 当 sgn == 0 时候，还需要判断一下 sum 是否为0，即 !sum == 1
+  // Warning: suggest parentheses around arithmetic in operand of |
+  int leq =  (!(x ^ y)) | (sgnx & (~sgny)) | (!(sgnx ^ sgny) & sgn);
+  return leq;
 }
 /*
  * intLog2 - return floor(log base 2 of x), where x > 0
