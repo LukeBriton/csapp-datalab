@@ -504,10 +504,10 @@ unsigned floatAbsVal(unsigned uf) {
   // Inf can be abs
   // NaN just return
   // 这里用不用 unsigned 都没事。
-  int exp = (0xff << 23);
-  int frac = (1 << 23 - 1);
-  int neg = (1 << 31);
-  if((exp & uf) == exp) // 抽象，之前用成了
+  unsigned exp = (0xff << 23);
+  unsigned frac = (1 << 23 - 1);
+  unsigned neg = (1 << 31);
+  if((exp & uf) == exp) // 抽象，之前用成了 &&
   {
     if((frac & uf) != 0)
       return uf;
@@ -553,7 +553,70 @@ unsigned floatAbsVal(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatScale1d2(unsigned uf) {
-  return 2;
+  int exp_ = (uf&0x7f800000) >> 23;
+  int s_ = uf&0x80000000;
+  if((uf&0x7fffffff) >= 0x7f800000) return uf;
+  if(exp_ > 1) return (uf&0x807fffff)|(--exp_)<<23;
+  if((uf&0x3) == 0x3) uf = uf + 0x2;
+  return ((uf>>1)&0x007fffff)|s_;
+
+  /*
+  //uf = 8388607;
+  unsigned expMask = (0xff << 23);
+  unsigned fracMask = (1 << 23 - 1);
+  unsigned sgnMask = (1 << 31);
+  unsigned nsgnMask = ~sgnMask;
+  unsigned exp = expMask & uf;
+  unsigned frac = fracMask & uf;
+  unsigned sgn = sgnMask & uf;
+  unsigned nsgn = nsgnMask & uf;
+  unsigned nsgnrs = nsgn >> 1;
+  if(nsgn == 0) // 注意运算结合优先级
+  // ((nsgnMask & uf) == 0) 和 (nsgnMask & uf == 0) 是不一样的！！！
+    return uf;
+  else if(nsgn == (1 << 23))
+    return nsgnrs|sgn;
+  else if (nsgn == ((1 << 23) - 1)) { // Handle the case of 0x7fffff separately
+    return ((nsgnrs|sgn >> 1) + 1);  // Return 0x3fffff + 1 (0.5 * 0x7fffff)
+  }
+
+  if(exp == expMask)
+  {
+    if(frac)
+      return uf;
+  }
+
+  // 需要考虑最小的非规格变成0，直接减会变成0！！！
+
+  if((exp == (1 << 23)))
+  {
+    exp -= (1 << 23);
+    frac += (1 << 22);
+    //return 1;
+  }
+  else if(exp != 0)
+  {
+    exp -= (1 << 23);
+    //return 2;
+  }
+  else if(((exp == 0) &&((frac >> 1) != 0)))
+  {
+    frac >>= 1;
+    frac += 1;
+    //return 3;
+  }
+  else if(exp == 0)
+  {
+    frac >>= 1;
+    //return 4;
+  }
+  
+  exp += frac;
+  exp |= sgn;
+
+
+  return exp;
+  */
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -568,5 +631,31 @@ unsigned floatScale1d2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  int exp = (uf >> 23) & 0xFF; /*8 exponent bits*/
+  int frac = uf & 0x7FFFFF; /*23 fraction bits*/
+  int e = exp - 127; /*amount to shift normalized values by (bias of 127)*/
+
+  /*returns if NaN*/
+  if(exp == 0x7F800000)
+    return 0x80000000u;
+  /*rounds down to zero if exponent is zero*/
+  if(!exp)
+    return 0;
+  /*rounds down to zero if there are no left shifts*/
+  if(e < 0)
+    return 0;
+  /*return if out of range for ints*/
+  if(e > 30)
+    return 0x80000000u;
+
+  frac = frac | 0x800000; /*normalized, append a 1 to the left of the frac*/
+  if (e >= 23)
+    frac = frac << (e-23); /*shift left if shift > 23*/
+  else
+    frac = frac >> (23 -e); /*else we need to shift right*/
+
+  if(( uf >> 31 ) & 1) 
+    return ~frac + 1; /*return negated value if sign bit is 1*/
+
+  return frac;
 }
