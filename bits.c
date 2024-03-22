@@ -496,7 +496,50 @@ int intLog2(int x) {
  *   Rating: 2
  */
 unsigned floatAbsVal(unsigned uf) {
-  return 2;
+  // A zero value, null pointer value,
+  // or null member pointer value is converted to false;
+  // any other value is converted to true.
+  // 32-bit
+  // 1-bit 8-bit 23-bit
+  // Inf can be abs
+  // NaN just return
+  // 这里用不用 unsigned 都没事。
+  int exp = (0xff << 23);
+  int frac = (1 << 23 - 1);
+  int neg = (1 << 31);
+  if((exp & uf) == exp) // 抽象，之前用成了
+  {
+    if((frac & uf) != 0)
+      return uf;
+  }
+  return uf & ~neg; // 无穷等同“正常”（其实也包括非规格化）的数
+
+  // 这是对的，思路不太一样。
+  /*
+  unsigned mask = (1 << 31) - 1;// 0x7FFFFFFF; // Mask to clear the sign bit
+  unsigned minNaN = 0x7F800001; // Smallest NaN in positive space
+  if ((uf & mask) >= minNaN) { // Check for NaN
+    return uf; // If NaN, just return the original value
+  }
+  return uf & mask; // Clear the sign bit for absolute value
+  */
+  // 这也是对的，思路一样，之前把 && 写成了 & 所以的到了不同的结果。
+  /*
+  unsigned expMask = (0xff << 23); // 0x7F800000; // 阶码掩码，用于提取阶码部分
+  unsigned fracMask =  (1 << 23 - 1); // 0x007FFFFF; // 尾数掩码，用于提取尾数部分
+  unsigned signMask =  0x80000000; // 符号位掩码，用于提取符号位
+
+  unsigned exp = uf & expMask; // 提取阶码部分
+  unsigned frac = uf & fracMask; // 提取尾数部分
+
+  // 检查是否为NaN：阶码全为1且尾数不为0
+  if (exp == expMask && frac != 0) {
+    return uf; // 如果是NaN，直接返回原值
+  }
+
+  // 取绝对值：清除符号位
+  return uf & ~signMask;
+  */
 }
 /* 
  * floatScale1d2 - Return bit-level equivalent of expression 0.5*f for
