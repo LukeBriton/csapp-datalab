@@ -538,7 +538,7 @@ unsigned floatAbsVal(unsigned uf) {
   }
 
   // 取绝对值：清除符号位
-  return uf & ~signMask;
+  return uf & ~signMask; 
   */
 }
 /* 
@@ -553,61 +553,61 @@ unsigned floatAbsVal(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatScale1d2(unsigned uf) {
+  /*
   int exp_ = (uf&0x7f800000) >> 23;
   int s_ = uf&0x80000000;
   if((uf&0x7fffffff) >= 0x7f800000) return uf;
   if(exp_ > 1) return (uf&0x807fffff)|(--exp_)<<23;
   if((uf&0x3) == 0x3) uf = uf + 0x2;
   return ((uf>>1)&0x007fffff)|s_;
-
-  /*
+  */
+  
   //uf = 8388607;
   unsigned expMask = (0xff << 23);
-  unsigned fracMask = (1 << 23 - 1);
+  unsigned fracMask = ((1 << 23) - 1); // 之前写成了 1 << 23 - 1
   unsigned sgnMask = (1 << 31);
   unsigned nsgnMask = ~sgnMask;
   unsigned exp = expMask & uf;
   unsigned frac = fracMask & uf;
   unsigned sgn = sgnMask & uf;
   unsigned nsgn = nsgnMask & uf;
-  unsigned nsgnrs = nsgn >> 1;
+  unsigned exp_0x01, mot_2Mask, mot_2, carry;
+
   if(nsgn == 0) // 注意运算结合优先级
   // ((nsgnMask & uf) == 0) 和 (nsgnMask & uf == 0) 是不一样的！！！
     return uf;
-  else if(nsgn == (1 << 23))
-    return nsgnrs|sgn;
-  else if (nsgn == ((1 << 23) - 1)) { // Handle the case of 0x7fffff separately
-    return ((nsgnrs|sgn >> 1) + 1);  // Return 0x3fffff + 1 (0.5 * 0x7fffff)
-  }
 
+  // Inf ∞ 应该是要求如同扩展实数线里一般，满足种种特性。
   if(exp == expMask)
   {
-    if(frac)
+    //if(frac)
       return uf;
   }
-
   // 需要考虑最小的非规格变成0，直接减会变成0！！！
+  // 右移需要考虑舍入，向上？向下？偶数？ 这里采用了偶数舍入。
+  exp_0x01 = (1 << 23);
+  mot_2Mask = 3; // 00...11
+  mot_2 = mot_2Mask & uf;
+  carry = (mot_2 == mot_2Mask);
 
-  if((exp == (1 << 23)))
+  if(exp > exp_0x01)
   {
-    exp -= (1 << 23);
+    exp -= exp_0x01;
+  }
+  else if((exp == exp_0x01))
+  {
+    exp -= exp_0x01;
+    frac >>= 1;
+    frac += carry;
     frac += (1 << 22);
     //return 1;
   }
-  else if(exp != 0)
+  else
   {
-    exp -= (1 << 23);
-    //return 2;
-  }
-  else if(((exp == 0) &&((frac >> 1) != 0)))
-  {
-    frac >>= 1;
-    frac += 1;
-    //return 3;
-  }
-  else if(exp == 0)
-  {
-    frac >>= 1;
+    frac >>= 1; // 只用这条会有
+    // ERROR: Test floatScale1d2(8388607[0x7fffff]) failed...
+    // ...Gives 4194303[0x3fffff]. Should be 4194304[0x400000]
+    frac += carry; // 考虑偶数舍入
     //return 4;
   }
   
@@ -616,7 +616,7 @@ unsigned floatScale1d2(unsigned uf) {
 
 
   return exp;
-  */
+  
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
