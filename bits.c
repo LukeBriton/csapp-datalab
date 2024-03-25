@@ -631,31 +631,50 @@ unsigned floatScale1d2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  int exp = (uf >> 23) & 0xFF; /*8 exponent bits*/
-  int frac = uf & 0x7FFFFF; /*23 fraction bits*/
-  int e = exp - 127; /*amount to shift normalized values by (bias of 127)*/
+  unsigned expMask = (0xff << 23);
+  unsigned fracMask = ((1 << 23) - 1);
+  unsigned sgnMask = (1 << 31);
+  unsigned exp = expMask & uf;
+  unsigned exponent = (exp >> 23) - 127;
+  unsigned frac = fracMask & uf;
+  unsigned sgn = sgnMask & uf;
 
-  /*returns if NaN*/
-  if(exp == 0x7F800000)
+  if(exp == expMask)
     return 0x80000000u;
-  /*rounds down to zero if exponent is zero*/
-  if(!exp)
+  if(exp == 0)
     return 0;
-  /*rounds down to zero if there are no left shifts*/
-  if(e < 0)
+  
+  // Integer Truncation makes life easy.
+  // Bias = 127
+  // exp_127 = 0111 1111 0...0
+  // 若 exp < 0x7f 0...0
+  // 那么最大也就是 2^(-1) * (1 + 1/2 + 1/4 + ... + 1/(2^23)) < 1
+  if(exp < (0x7f << 23))
     return 0;
-  /*return if out of range for ints*/
-  if(e > 30)
+  // int -2^31 ~ 2^31 - 1
+  // 2^30 * (1 + 1/2 + 1/4 + ... + 1/(2^23)) < 2^31
+  // 157 = 128 + 29 = 128 + 32 - 3 = 127 + 16 + 8 + 4 + 1 = 10011101 = 9d
+  // exp_157 = 1001 1101 0...0
+  if(exp > (0x9d << 23))
     return 0x80000000u;
-
-  frac = frac | 0x800000; /*normalized, append a 1 to the left of the frac*/
-  if (e >= 23)
-    frac = frac << (e-23); /*shift left if shift > 23*/
+  // 加上前导1
+  frac = frac | 0x800000;
+  // 接下来的操作类似于左移（阶码算出来与偏置作差）位。
+  // e.g. 2^13 * (1 + 1/2 + 1/4 + ... + 1/(2^23)) 之后的是怎么办，直接不动了？
+  // 当正好为 2^23 的时候，相当于尾数就不用再动了，其他时候需要左移或右移。
+  if(exponent > 23)
+  {
+    frac <<= (exponent - 23); // >>= 有等号！
+  }
   else
-    frac = frac >> (23 -e); /*else we need to shift right*/
-
-  if(( uf >> 31 ) & 1) 
-    return ~frac + 1; /*return negated value if sign bit is 1*/
-
+  {
+    frac >>= (23 - exponent);
+  }
+  // 以上其实都是操作的绝对值
+  // 负数需要取补码
+  if(sgn == sgnMask)
+  {
+    frac = (~frac) + 1;
+  }
   return frac;
 }
