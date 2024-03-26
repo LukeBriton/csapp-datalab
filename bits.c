@@ -312,7 +312,18 @@ int fitsBits(int x, int n) {
   //int nneg = nsgn & !((x >> nsub1));
   //int neg = sgn & (!(((~(x>>n)))));
   int neg1 = ~0;//((~1)+1);
-  int mask = neg1 << (n + neg1); // 老是忘记要减1的操作。
+
+  // 憨了，n 不可能为 0！！！
+  // 应该提前判断是否 n 为 0，为 0 必定不可表示。
+  // 又不让用 if
+  // 那就别让它溢出，n 要是 0 就给要右移的 (n - 1) 位加上 1。
+  int shift = n + neg1; // + ((!n) & 1);
+  int mask = neg1 << shift; // 之前老是忘记要减1的操作。
+  // n = 0 时，mask = -2147483648[0x80000000]
+  
+  //int mask = (neg1 << n) >> 1;
+  // n = 0 时，mask = -1[0xffffffff]
+  // 是有误的操作，因为在左移 32 位后会变成 0，即便再右移动也没用。
   int nneg = nsgn & !(x & mask);
   int neg = sgn & !(~(x | (~mask)));
   // -2147483648[0x80000000]
