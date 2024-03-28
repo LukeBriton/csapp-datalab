@@ -709,15 +709,18 @@ unsigned floatAbsVal(unsigned uf) {
 | 要求     | 30            |
 
 **分析：** +0 -0 直接返回。
+
 $$
-x\cdot\infin=\left\{
+x\cdot\infty=\left\{
 \begin{matrix}
-\infin,\ x\gt 0\\
--\infin,\ x\lt 0
+\infty,\ x > 0\\
+-\infty,\ x < 0
 \end{matrix}
 \right.
 $$
+
 负无穷类似，符号相反。所以我们在处理 Inf 和 -Inf 时，直接将其返回。
+
 $$
 uf=1.frac\ \cdot\ 2^{exp-127}=(1+x_{1}\cdot 2^{-1}+x_2\cdot 2^{-2} + ... + x_{23}\cdot 2^{-23})\ \cdot\ 2^{exp-127}
 $$
@@ -958,6 +961,20 @@ https://stackoverflow.com/questions/24723180/c-convert-floating-point-to-int
 
 ### Infinity
 
-IEEE Standard for Floating-Point Arithmetic https://ieeexplore.ieee.org/document/8766229
+[IEEE Standard for Floating-Point Arithmetic](https://ieeexplore.ieee.org/document/8766229)
 
 Analysis I (Herbert Amann&Joachim Escher)
+
+### Markdown & Pandoc & LaTeX
+
+Typora 中的 `\infin` 可以用，但 Zettlr 导出时不行；
+
+Typora 和 Zettlr 中的 `gt`, `lt` 可以用，但 Zettlr 导出时不行。
+
+提示均为 Undefined Control Sequence
+
+https://tex.stackexchange.com/questions/257160/undefined-control-sequence-infty-f-i-right-sum-i-1-infy-underf
+
+https://tex.stackexchange.com/questions/302554/why-am-i-getting-an-undefined-control-sequence-error-in-this-line
+
+https://tex.stackexchange.com/questions/12519/what-library-do-i-have-to-use-such-that-the-document-can-render-lt-and-gt-as-l
