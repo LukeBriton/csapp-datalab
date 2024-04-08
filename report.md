@@ -953,6 +953,7 @@ https://stackoverflow.com/questions/18840422/do-negative-numbers-return-false-in
 
 ### Integer Truncation
 https://stackoverflow.com/posts/11128755/timeline
+
 In case of casting a `float`/`double` value to `int`, you generally loose the *fractional* part due to **integer truncation**.
 
 https://stackoverflow.com/questions/11128741/cast-variable-to-int-vs-round-function
